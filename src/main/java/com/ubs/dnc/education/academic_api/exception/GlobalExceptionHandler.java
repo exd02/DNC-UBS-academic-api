@@ -2,6 +2,7 @@ package com.ubs.dnc.education.academic_api.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(AlunoNotFoundException.class)
@@ -20,28 +22,14 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpServletResponse.SC_NOT_FOUND, "ID inválido", ex, request);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleArgumentNotValidException(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        Map<String, String> fieldErrors = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .collect(Collectors.toMap(
-                        FieldError::getField,
-                        FieldError::getDefaultMessage,
-                        (existing, replacement) -> existing
-                ));
-
-        return buildErrorResponse(HttpServletResponse.SC_BAD_REQUEST, "Validation error", "Validation failed for one or more fields", request.getServletPath(), fieldErrors);
-    }
-
     @ExceptionHandler(CepNaoEncontradoException.class)
     public ResponseEntity<Map<String, Object>> handleCepNaoEncontrado(CepNaoEncontradoException ex, HttpServletRequest request) {
-        return buildErrorResponse(HttpServletResponse.SC_NOT_FOUND, "CEP Not Found", ex, request);
+        return buildErrorResponse(HttpServletResponse.SC_NOT_FOUND, "CEP não encontrado", ex, request);
     }
 
     @ExceptionHandler(CepInvalidoException.class)
     public ResponseEntity<Map<String, Object>> handleCepInvalido(CepInvalidoException ex, HttpServletRequest request) {
-        return buildErrorResponse(HttpServletResponse.SC_BAD_REQUEST, "Invalid CEP", ex, request);
+        return buildErrorResponse(HttpServletResponse.SC_BAD_REQUEST, "CEP invalido", ex, request);
     }
 
     @ExceptionHandler(CepErroConsultaException.class)
@@ -58,7 +46,23 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(status, error, ex.getMessage(), request.getServletPath(), null);
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleArgumentNotValidException(MethodArgumentNotValidException ex, HttpServletRequest request) {
+        Map<String, String> fieldErrors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .collect(Collectors.toMap(
+                        FieldError::getField,
+                        FieldError::getDefaultMessage,
+                        (existing, replacement) -> existing
+                ));
+
+        return buildErrorResponse(HttpServletResponse.SC_BAD_REQUEST, "Validation error", "Validation failed for one or more fields", request.getServletPath(), fieldErrors);
+    }
+
     private ResponseEntity<Map<String, Object>> buildErrorResponse(int status, String error, String message, String path, Map<String, String> fieldErrors) {
+        log.warn("Exception[{}]: {}: {} at {}", status, error, message, path);
+
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", Instant.now());
         body.put("status", status);

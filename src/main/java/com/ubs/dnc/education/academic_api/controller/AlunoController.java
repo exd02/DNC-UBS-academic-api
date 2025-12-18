@@ -7,6 +7,7 @@ import com.ubs.dnc.education.academic_api.service.AlunoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/aluno")
 @Tag(name = "Alunos", description = "Gerenciamento de Alunos")
+@Slf4j
 public class AlunoController {
     @Autowired
     private AlunoService service;
@@ -24,13 +26,16 @@ public class AlunoController {
     @GetMapping
     @Operation(summary = "Listar todos os alunos", description = "Retorna uma coleção de todos os alunos")
     public ResponseEntity<List<AlunoDTO>> listarTodos() {
+        log.info("GET /api/v1/aluno - Listando todos os alunos");
         List<AlunoDTO> alunos = service.listarTodos();
+        log.info("Retornados {} Alunos", alunos.size());
         return ResponseEntity.ok(alunos);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Buscar aluno pelo seu ID", description = "Retorna um aluno específico")
     public ResponseEntity<AlunoDTO> buscarPorId(@PathVariable Long id) {
+        log.info("GET /api/v1/aluno/{} - Buscando aluno", id);
         AlunoDTO aluno = service.buscarPorId(id);
         return ResponseEntity.ok(aluno);
     }
@@ -38,7 +43,9 @@ public class AlunoController {
     @PostMapping
     @Operation(summary = "Cadastrar um novo aluno", description = "Cria um novo aluno no sistema")
     public ResponseEntity<AlunoDTO> cadastrar(@Valid @RequestBody CreateAlunoRequest request) {
+        log.info("POST /api/v1/aluno - Cadastrando aluno: cpf={}", request.getCpf());
         AlunoDTO cadastrado = service.cadastrar(request);
+        log.info("Aluno cadastrado com sucesso");
         return ResponseEntity.status(HttpStatus.CREATED).body(cadastrado);
     }
 
@@ -47,14 +54,18 @@ public class AlunoController {
     public ResponseEntity<AlunoDTO> atualizar(
             @PathVariable Long id,
             @Valid @RequestBody UpdateAlunoRequest request) {
+        log.info("PATCH /api/v1/aluno/{} - Atualizando aluno", id);
         AlunoDTO atualizado = service.atualizar(id, request);
+        log.info("Aluno atualizado com sucesso: id={}", id);
         return ResponseEntity.ok(atualizado);
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Remover aluno", description = "Remove um aluno do sistema")
     public ResponseEntity<Void> remover(@PathVariable Long id) {
+        log.info("DELETE /api/v1/aluno/{} - Removendo aluno", id);
         service.remover(id);
+        log.info("Aluno removido com sucesso: id={}", id);
         return ResponseEntity.noContent().build();
     }
 }
