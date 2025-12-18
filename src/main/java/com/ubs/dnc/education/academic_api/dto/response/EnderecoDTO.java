@@ -1,14 +1,12 @@
 package com.ubs.dnc.education.academic_api.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class EnderecoDTO {
     private String cep;
     private String bairro;
